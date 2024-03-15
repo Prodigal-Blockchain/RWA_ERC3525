@@ -26,4 +26,9 @@ ERC-3525 introduces semi-fungible tokens that combine features from ERC-20 and E
    - Enhance liquidity management by representing shares in liquidity pools.
    - Users can trade these shares while maintaining fungibility.
 
+## Dynamic NFTs for Fractional Ownership
+- We've extended this project to include dynamic NFTs.
+- These NFT values change over time, responding to external events or user interactions.
+- Our dynamic NFTs represent fractional ownership, allowing users to hold a fraction of an asset without needing to own the entire thing.
+
 
