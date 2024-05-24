@@ -5,7 +5,6 @@ require("solidity-coverage");
 
 const url = process.env.RPC_URL;
 const wallet = process.env.PRIVATE_KEY;
-const DEPLOYER = "0x6b3Ec468ca25E98Ee520bF68a7c53c9e83C62841";
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   defaultNetwork: "hardhat",
