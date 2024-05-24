@@ -34,6 +34,4 @@ interface IERC3525Metadata is IERC3525, IERC721Metadata {
      * @return The JSON formatted URI of `_slot`
      */
     function slotURI(uint256 _slot) external view returns (string memory);
-
- 
 }

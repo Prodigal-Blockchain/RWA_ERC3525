@@ -26,5 +26,5 @@ interface IERC721Metadata is IERC721 {
      *  3986. The URI may point to a JSON file that conforms to the "ERC721
      *  Metadata JSON Schema".
      */
-    function tokenURI(uint256 _tokenId) external  returns (string memory);
+    function tokenURI(uint256 _tokenId) external view returns (string memory);
 }

@@ -26,8 +26,8 @@ describe("AssetRegistry Contract", function () {
   describe("Token Name and Symbol", function () {
     it("Should deploy with the correct name and symbol", async function () {
       const { assetRegistry } = await loadFixture(deployTokenFixture);
-      expect(await assetRegistry.name()).to.equal("VMANNFT");
-      expect(await assetRegistry.symbol()).to.equal("VMAN");
+      expect(await assetRegistry.name()).to.equal("AssetNFT");
+      expect(await assetRegistry.symbol()).to.equal("Asset");
     });
   });
 

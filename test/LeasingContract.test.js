@@ -11,10 +11,10 @@ describe("LeasingContract", function () {
     //get accounts
     const [Admin, Owner, addr1, addr2] = await ethers.getSigners();
     const totalSupply = 100;
-    // Deploy the VMANToken contract
-    const VMANToken = await ethers.getContractFactory("VMANToken");
-    const VMANTokenInstance = await VMANToken.deploy();
-    await VMANTokenInstance.waitForDeployment();
+    // Deploy the AssetToken contract
+    const AssetToken = await ethers.getContractFactory("AssetToken");
+    const AssetTokenInstance = await AssetToken.deploy();
+    await AssetTokenInstance.waitForDeployment();
 
     // Deploy the AssetRegistry contract
     const AssetRegistry = await ethers.getContractFactory("AssetRegistry");
@@ -50,7 +50,7 @@ describe("LeasingContract", function () {
 
     return {
       assetRegistryInstance,
-      VMANTokenInstance,
+      AssetTokenInstance,
       LeasingContractInstance,
       Owner,
       Admin,

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./ERC3525.sol";
+import "./AssetRegistry.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 // import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -9,10 +9,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract LeasingContract is Ownable {
     // using SafeMath for uint256;
 
-    AssetRegistry public assetRegistry;
+    ERC3525 public assetRegistry;
     uint256 lastBlockTimeStamp = 0;
-
-    
 
     enum LeaseType {
         wetLease,
@@ -47,12 +45,8 @@ contract LeasingContract is Ownable {
     );
     event LeaseTerminated(address indexed lessee, uint256 indexed leaseId);
 
-    constructor(
-        address _assetRegistryAddress,
-        address _assetPriceoracle
-    ) Ownable(msg.sender) {
-        assetRegistry = AssetRegistry(_assetRegistryAddress);
-        // assetPriceOracle = IAssetPriceOracle(_assetPriceoracle);
+    constructor(address _assetRegistryAddress) Ownable(msg.sender) {
+        assetRegistry = ERC3525(_assetRegistryAddress);
     }
 
     //Assuming the asset price is set in usd
@@ -76,23 +70,26 @@ contract LeasingContract is Ownable {
             duration >= 157680000,
             "LeasingContract: Lease duration should be atleast 5 years"
         );
-        require(assetRegistry.getAssetOwner(assetId)==msg.sender,"Not asset owner");
+        require(
+            assetRegistry.getAssetOwner(assetId) == msg.sender,
+            "Not asset owner"
+        );
         uint256 durationInMonth = duration / 2628000;
         uint256 basePrice = assetLeasePrice[assetId] * (durationInMonth);
 
         if (leaseType == LeaseType.wetLease) {
             // every month the fees is collected
-            uint256 maintenanceCharge = basePrice * (5)/(1000); // 0.5% per month
+            uint256 maintenanceCharge = (basePrice * (5)) / (1000); // 0.5% per month
             basePrice = basePrice + (maintenanceCharge);
         }
 
         //holder discount interms of percentage
-        uint256 discountAmount = basePrice * (holderDiscount)/(100);
+        uint256 discountAmount = (basePrice * (holderDiscount)) / (100);
         uint256 totalcostInUSD = basePrice - discountAmount;
         // uint256 totalCostInToken = totalcostInUSD /
         //     assetPriceOracle.getTokenPrice(tokenAddress);
         //price hardcoded for testing purposes
-        uint256 totalCostInToken = totalcostInUSD /10;
+        uint256 totalCostInToken = totalcostInUSD / 10;
         //transfet the cost interms of token to the user
 
         // IERC20(tokenAddress).approve(address(this), totalCostInToken);
@@ -133,28 +130,30 @@ contract LeasingContract is Ownable {
     // }
 
     //cost in interms of the transaction which user selected token
-    function distributeRent(
-        uint256 assetId,
-        uint256 totalLeaseAmount
-    ) public {
+    function distributeRent(uint256 assetId, uint256 totalLeaseAmount) public {
         address[] memory owners = assetRegistry.getAssetOwners(assetId);
         uint256 totalSupply = assetRegistry.getAssetTotalSupply(assetId);
         // require(lastBlockTimeStamp >= 2628000, "Less than one month");
         require(totalSupply > 0, "LeasingContract: No fractional owners");
-        require(assetRegistry.getAssetOwner(assetId)==msg.sender,"Not asset owner");
-         totalLeaseAmount=totalSupply;
+        require(
+            assetRegistry.getAssetOwner(assetId) == msg.sender,
+            "Not asset owner"
+        );
+        totalLeaseAmount = totalSupply;
         for (uint256 i = 0; i < owners.length; i++) {
             address owner = owners[i];
-            uint256 ownerBalance = assetRegistry.getUserAssetTokenBalance(owner, assetId);
+            uint256 ownerBalance = assetRegistry.getUserAssetTokenBalance(
+                owner,
+                assetId
+            );
 
-            if(ownerBalance > 0){
-               uint256 rentPerToken = totalLeaseAmount/(totalSupply);
-                 
+            if (ownerBalance > 0) {
+                uint256 rentPerToken = totalLeaseAmount / (totalSupply);
+
                 uint256 ownerShare = ownerBalance * rentPerToken;
                 OwnerClaimBalance[owner][assetId] = ownerShare;
                 ownerExists[owner] = true;
             }
-           
         }
     }
 
@@ -177,34 +176,37 @@ contract LeasingContract is Ownable {
     }
 
     function getHolderDiscount() public view returns (uint256) {
-    return holderDiscount;
-}
+        return holderDiscount;
+    }
 
-function setHolderDiscount(uint256 _newDiscount) public {
-    holderDiscount = _newDiscount;
-}
+    function setHolderDiscount(uint256 _newDiscount) public {
+        holderDiscount = _newDiscount;
+    }
 
     function claimFees(uint256 assetId) external {
-    require(msg.sender != address(0), "Not a valid address");
-    require(ownerExists[msg.sender], "Fractional Owner does not exist");
-    
-    uint256 ownerShare = OwnerClaimBalance[msg.sender][assetId];
-    require(ownerShare > 0, "No claimable balance");
+        require(msg.sender != address(0), "Not a valid address");
+        require(ownerExists[msg.sender], "Fractional Owner does not exist");
 
-    // Convert the owner's share to tokens if necessary (logic to be added based on your token conversion logic)
-    uint256 ownerShareInToken = ownerShare / 10; // Placeholder conversion logic
+        uint256 ownerShare = OwnerClaimBalance[msg.sender][assetId];
+        require(ownerShare > 0, "No claimable balance");
 
-    // Reset the claim balance to 0 after claiming
-    OwnerClaimBalance[msg.sender][assetId] = 0;
+        // Convert the owner's share to tokens if necessary (logic to be added based on your token conversion logic)
+        uint256 ownerShareInToken = ownerShare / 10; // Placeholder conversion logic
 
-    // Logic to transfer the claimed amount to the user
-    // For example, using IERC20 token interface (commented out as it depends on your specific implementation):
-    // IERC20(_token).transfer(msg.sender, ownerShareInToken);
-}
+        // Reset the claim balance to 0 after claiming
+        OwnerClaimBalance[msg.sender][assetId] = 0;
 
-function getOwnerClaimBalance(address owner,uint256 slot)public view returns(uint256){
-    return OwnerClaimBalance[owner][slot];
-}
-   
+        // Logic to transfer the claimed amount to the user
+        // For example, using IERC20 token interface (commented out as it depends on your specific implementation):
+        // IERC20(_token).transfer(msg.sender, ownerShareInToken);
+    }
+
+    function getOwnerClaimBalance(
+        address owner,
+        uint256 slot
+    ) public view returns (uint256) {
+        return OwnerClaimBalance[owner][slot];
+    }
+
     receive() external payable {}
 }
