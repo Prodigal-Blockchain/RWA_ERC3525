@@ -123,7 +123,7 @@ The Leasing contract facilitates the leasing of assets registered in the AssetRe
 1. Clone the Repository
 
    ```bash
-   git clone https://github.com/RWA_ERC3525.git
+   git clone https://github.com/Prodigal-Blockchain/RWA_ERC3525.git
    cd RWA_ERC3525
    ```
 
@@ -150,7 +150,7 @@ The Leasing contract facilitates the leasing of assets registered in the AssetRe
 1. Deploy the Contracts
 
    ```bash
-   npx hardhat run scripts/deploy.Js --network NETWORK
+   npx hardhat run scripts/deploy.js --network NETWORK
    ```
 
    Replace `NETWORK` with the network you have configured in your Hardhat configuration file (e.g., `sepolia`).
